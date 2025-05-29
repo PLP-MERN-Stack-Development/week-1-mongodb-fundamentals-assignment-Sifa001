@@ -1,47 +1,123 @@
-[![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-2e0aaae1b6195c2367325f4f02e2d04e9abb55f0b24a779b69b11b9e10269abc.svg)](https://classroom.github.com/online_ide?assignment_repo_id=19663853&assignment_repo_type=AssignmentRepo)
-# MongoDB Fundamentals Assignment
+# PLP Bookstore Database
 
-This assignment focuses on learning MongoDB fundamentals including setup, CRUD operations, advanced queries, aggregation pipelines, and indexing.
+This MongoDB project sets up a simple bookstore database with a collection of books and demonstrates a variety of database operations, from inserting data to performing advanced queries and optimizations using indexes.
 
-## Assignment Overview
+## Database Name
+`plp_bookstore`
 
-You will:
-1. Set up a MongoDB database
-2. Perform basic CRUD operations
-3. Write advanced queries with filtering, projection, and sorting
-4. Create aggregation pipelines for data analysis
-5. Implement indexing for performance optimization
+## Collection
+`books`
 
-## Getting Started
+## Setup Instructions
 
-1. Accept the GitHub Classroom assignment invitation
-2. Clone your personal repository that was created by GitHub Classroom
-3. Install MongoDB locally or set up a MongoDB Atlas account
-4. Run the provided `insert_books.js` script to populate your database
-5. Complete the tasks in the assignment document
+To get started, open your MongoDB shell and run:
 
-## Files Included
+```js
+use plp_bookstore;
+```
 
-- `Week1-Assignment.md`: Detailed assignment instructions
-- `insert_books.js`: Script to populate your MongoDB database with sample book data
+Then insert the sample documents:
 
-## Requirements
+```js
+db.books.insertMany([...]); // See full data in `books` collection section
+```
 
-- Node.js (v18 or higher)
-- MongoDB (local installation or Atlas account)
-- MongoDB Shell (mongosh) or MongoDB Compass
+## Sample Documents
 
-## Submission
+Each book document includes:
+- `title` (String)
+- `author` (String)
+- `genre` (String)
+- `published_year` (Number)
+- `price` (Decimal)
+- `in_stock` (Boolean)
+- `pages` (Number)
+- `publisher` (String)
 
-Your work will be automatically submitted when you push to your GitHub Classroom repository. Make sure to:
+> 12 book records are included, featuring authors like George Orwell, J.R.R. Tolkien, and Jane Austen.
 
-1. Complete all tasks in the assignment
-2. Add your `queries.js` file with all required MongoDB queries
-3. Include a screenshot of your MongoDB database
-4. Update the README.md with your specific setup instructions
+## Common Queries
 
-## Resources
+### 1. Find all Fantasy books
+```js
+db.books.find({ genre: "Fantasy" });
+```
 
-- [MongoDB Documentation](https://docs.mongodb.com/)
-- [MongoDB University](https://university.mongodb.com/)
-- [MongoDB Node.js Driver](https://mongodb.github.io/node-mongodb-native/) 
+### 2. Update the price of *The Alchemist*
+```js
+db.books.updateOne(
+  { title: "The Alchemist" },
+  { $set: { price: 15.99 } }
+);
+```
+
+## Advanced Queries
+
+### Books in stock and published after 2010
+```js
+db.books.find({
+  in_stock: true,
+  published_year: { $gt: 2010 }
+});
+```
+
+### Projection: Only show title, author, and price
+```js
+db.books.find({}, { title: 1, author: 1, price: 1, _id: 0 });
+```
+
+## Aggregation Pipelines
+
+### Average price of books by genre
+```js
+db.books.aggregate([
+  { $group: { _id: "$genre", avgPrice: { $avg: "$price" } } }
+]);
+```
+
+### Group books by publication decade
+```js
+db.books.aggregate([
+  {
+    $group: {
+      _id: { $floor: { $divide: ["$published_year", 10] } },
+      bookCount: { $sum: 1 }
+    }
+  },
+  {
+    $project: {
+      decade: { $multiply: ["$_id", 10] },
+      bookCount: 1,
+      _id: 0
+    }
+  },
+  { $sort: { decade: 1 } }
+]);
+```
+
+##  Indexing
+
+### Create an index on the `title` field
+```js
+db.books.createIndex({ title: 1 });
+```
+
+### Check query performance before and after using an index
+- Without index:
+  ```js
+  db.books.find({ title: "Jane Austen" }).explain("executionStats");
+  ```
+- With index:
+  ```js
+  db.books.find({ title: "Jane Austen" }).hint({ title: 1 }).explain("executionStats");
+  ```
+
+## Summary
+
+This project helps you practice:
+- Data modeling and insertion
+- CRUD operations
+- Querying with filters, projections, sorting, and pagination
+- Aggregation pipelines
+- Index creation and performance testing
+

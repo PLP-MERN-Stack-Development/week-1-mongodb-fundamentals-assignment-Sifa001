@@ -146,10 +146,7 @@ db.books.deleteOne({ title: "Pride and Prejudice" });
 
 //TASK 3
 //Write a query to find books that are both in stock and published after 2010
-db.books.find({
-  in_stock: true,
-  published_year: { $gt: 2010 }
-});
+db.books.find ({$or : [{in_stock: true},{published_year: {$gt: 2010}}]})
 
 //Use projection to return only the title, author, and price fields in your queries
 db.books.find(
